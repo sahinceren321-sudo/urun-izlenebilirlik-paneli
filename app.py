@@ -10,29 +10,19 @@ def bekleme_suresi(kayit_saati):
     try:
         baslangic = datetime.strptime(kayit_saati, "%d.%m.%Y %H:%M")
         fark = datetime.now() - baslangic
-
         gun = fark.days
         saat = fark.seconds // 3600
         dakika = (fark.seconds % 3600) // 60
-
         return f"{gun} gün {saat} saat {dakika} dk"
     except:
         return "-"
 
 if "veri" not in st.session_state:
     simdi = datetime.now().strftime("%d.%m.%Y %H:%M")
-
     st.session_state.veri = pd.DataFrame([
         ["4.9046_51", "Slab", "İç Sahada", "Direkt Slab Satış", "Sevkiyat Bekliyor", simdi],
         ["4.4244_52", "Kütük", "Kütük Sahada", "Kangal Oldu", "Kangal Haddehanesine Gidecek", simdi],
-    ], columns=[
-        "Ürün ID",
-        "Tip",
-        "Konum",
-        "Durum",
-        "Sonraki Adım",
-        "Kayıt Saati"
-    ])
+    ], columns=["Ürün ID", "Tip", "Konum", "Durum", "Sonraki Adım", "Kayıt Saati"])
 
 df = st.session_state.veri.copy()
 df["Bekleme Süresi"] = df["Kayıt Saati"].apply(bekleme_suresi)
@@ -75,14 +65,7 @@ if kaydet:
 
     yeni = pd.DataFrame([
         [urun, tip, konum, durum, adim, simdi]
-    ], columns=[
-        "Ürün ID",
-        "Tip",
-        "Konum",
-        "Durum",
-        "Sonraki Adım",
-        "Kayıt Saati"
-    ])
+    ], columns=["Ürün ID", "Tip", "Konum", "Durum", "Sonraki Adım", "Kayıt Saati"])
 
     st.session_state.veri = pd.concat(
         [st.session_state.veri, yeni],
@@ -91,3 +74,19 @@ if kaydet:
 
     st.success("Kayıt eklendi")
     st.rerun()
+
+st.subheader("Kayıt Silme")
+
+if len(st.session_state.veri) > 0:
+    silinecek_index = st.selectbox(
+        "Silmek istediğin kaydı seç",
+        st.session_state.veri.index,
+        format_func=lambda x: f"{st.session_state.veri.loc[x, 'Ürün ID']} - {st.session_state.veri.loc[x, 'Tip']} - {st.session_state.veri.loc[x, 'Konum']}"
+    )
+
+    if st.button("Seçili Kaydı Sil"):
+        st.session_state.veri = st.session_state.veri.drop(silinecek_index).reset_index(drop=True)
+        st.success("Kayıt silindi")
+        st.rerun()
+else:
+    st.info("Silinecek kayıt yok.")
