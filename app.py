@@ -28,8 +28,35 @@ df = st.session_state.veri.copy()
 df["Bekleme Süresi"] = df["Kayıt Saati"].apply(bekleme_suresi)
 
 st.subheader("Genel Tablo")
-st.dataframe(df, use_container_width=True)
 
+# Başlıklar
+col1, col2, col3, col4, col5, col6, col7, col8 = st.columns([2,2,2,2,2,2,2,1])
+col1.write("Ürün ID")
+col2.write("Tip")
+col3.write("Konum")
+col4.write("Durum")
+col5.write("Sonraki Adım")
+col6.write("Kayıt Saati")
+col7.write("Bekleme Süresi")
+col8.write("Sil")
+
+st.markdown("---")
+
+# Satırlar
+for i, row in st.session_state.veri.iterrows():
+    col1, col2, col3, col4, col5, col6, col7, col8 = st.columns([2,2,2,2,2,2,2,1])
+
+    col1.write(row["Ürün ID"])
+    col2.write(row["Tip"])
+    col3.write(row["Konum"])
+    col4.write(row["Durum"])
+    col5.write(row["Sonraki Adım"])
+    col6.write(row["Kayıt Saati"])
+    col7.write(bekleme_suresi(row["Kayıt Saati"]))
+
+    if col8.button("🗑️", key=f"sil_{i}"):
+        st.session_state.veri = st.session_state.veri.drop(i).reset_index(drop=True)
+        st.rerun()
 st.subheader("Yeni Veri Girişi")
 
 with st.form("form"):
@@ -74,19 +101,3 @@ if kaydet:
 
     st.success("Kayıt eklendi")
     st.rerun()
-
-st.subheader("Kayıt Silme")
-
-if len(st.session_state.veri) > 0:
-    silinecek_index = st.selectbox(
-        "Silmek istediğin kaydı seç",
-        st.session_state.veri.index,
-        format_func=lambda x: f"{st.session_state.veri.loc[x, 'Ürün ID']} - {st.session_state.veri.loc[x, 'Tip']} - {st.session_state.veri.loc[x, 'Konum']}"
-    )
-
-    if st.button("Seçili Kaydı Sil"):
-        st.session_state.veri = st.session_state.veri.drop(silinecek_index).reset_index(drop=True)
-        st.success("Kayıt silindi")
-        st.rerun()
-else:
-    st.info("Silinecek kayıt yok.")
